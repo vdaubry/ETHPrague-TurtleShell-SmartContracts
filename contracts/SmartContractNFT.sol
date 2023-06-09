@@ -6,6 +6,8 @@ import "./AuditorNFT.sol";
 // TODO: Create second version which stores security data on IPFS
 contract SmartContractNFT {
   // STORAGE
+  AuditorNFT private s_auditorNFT;
+
   // struct for the Audit Security JSON
   struct AuditSecurityData {
     address auditor;
@@ -22,16 +24,21 @@ contract SmartContractNFT {
   // address of the Auditor NFT contract (to update array)
 
   mapping(address contractAddress => AuditSecurityData[]) private s_contractAudits;
-
   mapping(address contractAddress => ContractSecurityData) private s_contractSecurity;
 
   // EVENTS
   event MintSmartContractNFT(address auditor, address contractAddress, AuditSecurityData securityData);
 
-  modifier onlyAuditor() {
+  modifier onlyAuditor(address auditor) {
     // check if has auditor NFT, revert otherwise
-
+    AuditorNFT.AuditorData memory auditorData = s_auditorNFT.getAuditorData(auditor);
+    require(auditorData.reputationScore > 0, "AuditorNFT: caller has no AuditorNFT minted");
     _;
+  }
+
+  // CONSTRUCTOR
+  constructor(address auditorNFTAddress) {
+    s_auditorNFT = AuditorNFT(auditorNFTAddress);
   }
 
   // FUNCTIONS
@@ -44,8 +51,8 @@ contract SmartContractNFT {
     bytes32 bestContractType = audits[0].contractType;
 
     for (uint256 i = 0; i < audits.length; i++) {
-      // TODO: remove mock and get the reputation score when AuditorSBT is implemented
-      uint8 auditorReputationScore = 50;
+      AuditorNFT.AuditorData memory auditorData = s_auditorNFT.getAuditorData(audits[i].auditor);
+      uint8 auditorReputationScore = auditorData.reputationScore;
 
       // get data from auditor with best reputation
       if (auditorReputationScore > currentMaximumReputation) {
@@ -68,7 +75,7 @@ contract SmartContractNFT {
   function mint(
     address contractAddress,
     AuditSecurityData calldata newAuditSecurityData
-  ) external onlyAuditor {
+  ) external onlyAuditor(msg.sender) {
     s_contractAudits[contractAddress].push(newAuditSecurityData);
 
     _computeSecurityData(contractAddress);
@@ -76,7 +83,7 @@ contract SmartContractNFT {
     // update tokenIds
     // call ERC721 mint
 
-    emit MintSmartContractNFT(msg.sender, contractAddress, newAuditSecurityData);
+    emit MintSmartContractNFT(newAuditSecurityData.auditor, contractAddress, newAuditSecurityData);
   }
 
   // getContractSecurity(contractAddress) returns (uint8 score)
