@@ -60,8 +60,11 @@ module.exports = {
 		deployer: {
 			default: 0,
 		},
-		user: {
+		user1: {
 			default: 1,
+		},
+		user2: {
+			default: 2,
 		},
 	},
 	gasReporter: {

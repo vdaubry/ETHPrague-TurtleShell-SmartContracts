@@ -40,25 +40,32 @@ contract SmartContractNFT {
     }
 
     // FUNCTIONS
+    
     // computeSecurityData internal
     function _computeSecurityData(address contractAddress) internal {
-        // get Auditor NFT
-        // loop through the array of AuditSecurityData
         AuditSecurityData[] memory audits = s_contractAudits[contractAddress];
-        bytes32 contractType = s_contractSecurity[contractAddress].contractType;
         uint8 currentMaximumReputation = 0;
+        uint256 totalReputationScore = 0;
+        bytes32 bestContractType = audits[0].contractType;
+ 
         for (uint256 i = 0; i < audits.length; i++) {
-            // get the reputation score
-            // update currentMaximumReputation if the reputationScore is higher
-            // add repuationScore to the total
+            // TODO: remove mock and get the reputation score when AuditorSBT is implemented
+            uint8 auditorReputationScore = 50;
+
+            // get data from auditor with best reputation
+            if (auditorReputationScore > currentMaximumReputation) {
+                currentMaximumReputation = auditorReputationScore;
+                bestContractType = audits[i].contractType;
+            }
+            totalReputationScore += auditorReputationScore;
         }
 
-        // divide absolute amount by length of audits (is average)
+        uint8 averageReputationScore = uint8(totalReputationScore / audits.length);
 
         s_contractSecurity[contractAddress] = ContractSecurityData(
             contractAddress,
-            contractType,
-            100 // put final average here
+            bestContractType,
+            averageReputationScore
         );
     }
 
