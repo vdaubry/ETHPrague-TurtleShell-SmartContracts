@@ -1,84 +1,86 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.19;
+
+import "./AuditorNFT.sol";
 
 // TODO: Create second version which stores security data on IPFS
 contract SmartContractNFT {
-    // STORAGE
-    // struct for the Audit Security JSON
-    struct AuditSecurityData {
-        address auditor;
-        // keccak256 of the contract name keccak("flashloan")
-        bytes32 contractType;
+  // STORAGE
+  // struct for the Audit Security JSON
+  struct AuditSecurityData {
+    address auditor;
+    // keccak256 of the contract name keccak("flashloan")
+    bytes32 contractType;
+  }
+  
+  // struct for the Contract Security JSON
+  struct ContractSecurityData {
+    address contractAddress;
+    bytes32 contractType;
+    uint8 score;
+  }
+  // address of the Auditor NFT contract (to update array)
+
+  mapping(address contractAddress => AuditSecurityData[]) private s_contractAudits;
+
+  mapping(address contractAddress => ContractSecurityData) private s_contractSecurity;
+
+  // EVENTS
+  event MintSmartContractNFT(address auditor, address contractAddress, AuditSecurityData securityData);
+
+  modifier onlyAuditor() {
+    // check if has auditor NFT, revert otherwise
+
+    _;
+  }
+
+  // FUNCTIONS
+
+  // computeSecurityData internal
+  function _computeSecurityData(address contractAddress) internal {
+    AuditSecurityData[] memory audits = s_contractAudits[contractAddress];
+    uint8 currentMaximumReputation = 0;
+    uint256 totalReputationScore = 0;
+    bytes32 bestContractType = audits[0].contractType;
+
+    for (uint256 i = 0; i < audits.length; i++) {
+      // TODO: remove mock and get the reputation score when AuditorSBT is implemented
+      uint8 auditorReputationScore = 50;
+
+      // get data from auditor with best reputation
+      if (auditorReputationScore > currentMaximumReputation) {
+        currentMaximumReputation = auditorReputationScore;
+        bestContractType = audits[i].contractType;
+      }
+      totalReputationScore += auditorReputationScore;
     }
-    // struct for the Contract Security JSON
-    struct ContractSecurityData {
-        address contractAddress;
-        bytes32 contractType;
-        uint8 score;
-    }
-    // address of the Auditor NFT contract (to update array)
 
-    mapping(address contractAddress => AuditSecurityData[])
-        private s_contractAudits;
+    uint8 averageReputationScore = uint8(totalReputationScore / audits.length);
 
-    mapping(address contractAddress => ContractSecurityData)
-        private s_contractSecurity;
-
-    // EVENTS
-    event MintSmartContractNFT(
-        address auditor,
-        address contractAddress,
-        AuditSecurityData securityData
+    s_contractSecurity[contractAddress] = ContractSecurityData(
+      contractAddress,
+      bestContractType,
+      averageReputationScore
     );
+  }
 
-    modifier onlyAuditor() {
-        // check if has auditor NFT, revert otherwise
+  // mint(contractAddress, securityJSON)
+  function mint(
+    address contractAddress,
+    AuditSecurityData calldata newAuditSecurityData
+  ) external onlyAuditor {
+    s_contractAudits[contractAddress].push(newAuditSecurityData);
 
-        _;
-    }
+    _computeSecurityData(contractAddress);
 
-    // FUNCTIONS
-    // computeSecurityData internal
-    function _computeSecurityData(address contractAddress) internal {
-        // get Auditor NFT
-        // loop through the array of AuditSecurityData
-        AuditSecurityData[] memory audits = s_contractAudits[contractAddress];
-        bytes32 contractType = s_contractSecurity[contractAddress].contractType;
-        uint8 currentMaximumReputation = 0;
-        for (uint256 i = 0; i < audits.length; i++) {
-            // get the reputation score
-            // update currentMaximumReputation if the reputationScore is higher
-            // add repuationScore to the total
-        }
+    // update tokenIds
+    // call ERC721 mint
 
-        // divide absolute amount by length of audits (is average)
+    emit MintSmartContractNFT(msg.sender, contractAddress, newAuditSecurityData);
+  }
 
-        s_contractSecurity[contractAddress] = ContractSecurityData(
-            contractAddress,
-            contractType,
-            100 // put final average here
-        );
-    }
-
-    // mint(contractAddress, securityJSON)
-    function mint(
-        address contractAddress,
-        AuditSecurityData calldata newSecurityData
-    ) external onlyAuditor {
-        s_contractAudits[contractAddress].push(newSecurityData);
-
-        _computeSecurityData(contractAddress);
-
-        // update tokenIds
-        // call ERC721 mint
-
-        emit MintSmartContractNFT(msg.sender, contractAddress, newSecurityData);
-    }
-
-    // getContractSecurity(contractAddress) returns (uint8 score)
-    function getContractSecurity(
-        address contractAddress
-    ) external view returns (ContractSecurityData memory) {
-        return s_contractSecurity[contractAddress];
-    }
+  // getContractSecurity(contractAddress) returns (uint8 score)
+  function getContractSecurity(address contractAddress) external view returns (ContractSecurityData memory) {
+    return s_contractSecurity[contractAddress];
+  }
 }
