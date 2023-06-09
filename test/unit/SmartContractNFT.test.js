@@ -40,7 +40,7 @@ if (!constants.developmentChains.includes(network.name)) {
         })
       })
 
-      context("with multiple valid smart contract Audit", () => {
+      context("with multiple valid smart contract Audits", () => {
         context("all auditors have the same reputation", () => {
           let contractSecurityData
 

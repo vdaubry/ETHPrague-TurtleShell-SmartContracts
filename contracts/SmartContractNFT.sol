@@ -9,10 +9,10 @@ contract SmartContractNFT {
   // struct for the Audit Security JSON
   struct AuditSecurityData {
     address auditor;
-    // keccak256 of the contract name keccak("flashloan")
+    // keccak256 of the contract name, ex: keccak("flashloan")
     bytes32 contractType;
   }
-  
+
   // struct for the Contract Security JSON
   struct ContractSecurityData {
     address contractAddress;

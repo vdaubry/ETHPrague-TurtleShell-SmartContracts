@@ -6,15 +6,16 @@ require("dotenv").config()
 module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy, log } = deployments
   const { deployer } = await getNamedAccounts()
+  const chainId = network.config.chainId
   const isDevelopmentChain = constants.developmentChains.includes(network.name)
-  const waitBlockConfirmations = isDevelopmentChain ? 1 : VERIFICATION_BLOCK_CONFIRMATIONS
+  const waitBlockConfirmations = isDevelopmentChain ? 1 : network.config.blockConfirmations
   const contractName = "SmartContractNFT"
 
   log(`Deploying ${contractName}`)
-  const args = []
+  const constructorArguments = []
   const deployedContract = await deploy(contractName, {
     from: deployer,
-    args: args,
+    args: constructorArguments,
     log: true,
     waitConfirmations: waitBlockConfirmations,
   })
