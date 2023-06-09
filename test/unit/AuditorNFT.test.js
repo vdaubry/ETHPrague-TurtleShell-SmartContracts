@@ -18,6 +18,7 @@ if (!constants.developmentChains.includes(network.name)) {
       auditor1 = (await getNamedAccounts()).user1
       auditor2 = (await getNamedAccounts()).user2
       fakeContractAddress = "0x000000000000000000000000000000000000dEaD"
+      flashLoanType = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("flashloan"))
     })
 
     describe("mint", function () {
@@ -28,6 +29,23 @@ if (!constants.developmentChains.includes(network.name)) {
 
         expect(auditorData.reputationScore).to.equal(50)
         expect(auditorData.auditedContracts).to.deep.equal([])
+      })
+
+      describe("addAuditedContract", function () {
+        it("should add a new audited contract to the auditor's list of audited contracts", async function () {
+          await auditorNFT.mint(auditor1)
+          await smartContractNFT.mint(fakeContractAddress, {
+            auditor: auditor1,
+            contractType: flashLoanType,
+          })
+
+          await auditorNFT.addAuditedContract(auditor1, fakeContractAddress)
+
+          const auditorData = await auditorNFT.getAuditorData(auditor1)
+
+          expect(auditorData.auditedContracts).to.have.lengthOf(1)
+          expect(auditorData.auditedContracts[0]).to.equal(fakeContractAddress)
+        })
       })
     })
   })

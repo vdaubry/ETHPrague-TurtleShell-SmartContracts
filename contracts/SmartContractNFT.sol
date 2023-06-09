@@ -75,7 +75,7 @@ contract SmartContractNFT {
     // update tokenIds
     // call ERC721 mint
 
-    emit MintSmartContractNFT(msg.sender, contractAddress, newAuditSecurityData);
+    emit MintSmartContractNFT(newAuditSecurityData.auditor, contractAddress, newAuditSecurityData);
   }
 
   // getContractSecurity(contractAddress) returns (uint8 score)

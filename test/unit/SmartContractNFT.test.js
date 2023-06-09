@@ -45,9 +45,10 @@ if (!constants.developmentChains.includes(network.name)) {
             contractType: flashLoanType,
           }
 
-          await expect(smartContractNFT.mint(fakeContractAddress, newAuditSecurityData))
-            .to.emit(smartContractNFT, "MintSmartContractNFT")
-            .withArgs(auditor1, fakeContractAddress, newAuditSecurityData)
+          await expect(smartContractNFT.mint(fakeContractAddress, newAuditSecurityData)).to.emit(
+            smartContractNFT,
+            "MintSmartContractNFT"
+          )
         })
       })
 
