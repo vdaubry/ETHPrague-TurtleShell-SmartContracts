@@ -6,7 +6,7 @@ if (!constants.developmentChains.includes(network.name)) {
   describe.skip
 } else {
   describe("SmartContractNFT", () => {
-    let deployer, user1, user2
+    let deployer, auditor1, auditor2, fakeContractAddress, flashLoanType, erc20Type
 
     beforeEach(async () => {
       await deployments.fixture(["all"])
@@ -14,18 +14,20 @@ if (!constants.developmentChains.includes(network.name)) {
       provider = ethers.provider
 
       smartContractNFT = await ethers.getContract("SmartContractNFT", deployer)
-      auditorNFT = await ethers.getContract("AuditorNFT", deployer)
-      user1 = (await getNamedAccounts()).user1
-      user2 = (await getNamedAccounts()).user2
+      auditor1NFT = await ethers.getContract("AuditorNFT", deployer)
+      auditor1 = (await getNamedAccounts()).user1
+      auditor2 = (await getNamedAccounts()).user2
+      fakeContractAddress = "0x000000000000000000000000000000000000dEaD"
+      flashLoanType = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("flashloan"))
+      erc20Type = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("erc20"))
     })
 
     describe("mint", () => {
       context("with a valid smart contract Audit", () => {
         it("should add newAuditSecurityData to the list of audits", async () => {
-          const fakeContractAddress = "0x000000000000000000000000000000000000dEaD"
           const newAuditSecurityData = {
-            auditor: user1,
-            contractType: ethers.utils.keccak256(ethers.utils.toUtf8Bytes("flashloan")),
+            auditor: auditor1,
+            contractType: flashLoanType,
           }
 
           await smartContractNFT.mint(fakeContractAddress, newAuditSecurityData)
@@ -34,7 +36,38 @@ if (!constants.developmentChains.includes(network.name)) {
 
           expect(contractSecurityData.contractAddress).to.equal(fakeContractAddress)
           expect(contractSecurityData.score).to.equal(50)
-          expect(contractSecurityData.contractType).to.equal(newAuditSecurityData.contractType)
+          expect(contractSecurityData.contractType).to.equal(flashLoanType)
+        })
+      })
+
+      context("with multiple valid smart contract Audit", () => {
+        context("all auditors have the same reputation", () => {
+          let contractSecurityData
+
+          beforeEach(async () => {
+            let newAuditSecurityData = {
+              auditor: auditor1,
+              contractType: erc20Type,
+            }
+            await smartContractNFT.mint(fakeContractAddress, newAuditSecurityData)
+
+            newAuditSecurityData = {
+              auditor: auditor2,
+              contractType: flashLoanType,
+            }
+
+            await smartContractNFT.mint(fakeContractAddress, newAuditSecurityData)
+
+            contractSecurityData = await smartContractNFT.getContractSecurity(fakeContractAddress)
+          })
+
+          it("should average auditors reputation score", async () => {
+            expect(contractSecurityData.score).to.equal(50)
+          })
+
+          it("should take the first auditor's contract type", async () => {
+            expect(contractSecurityData.contractType).to.equal(erc20Type)
+          })
         })
       })
     })
