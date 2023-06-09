@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.19;
+
+import "./AuditorNFT.sol";
 
 // TODO: Create second version which stores security data on IPFS
 contract SmartContractNFT {
@@ -63,16 +65,16 @@ contract SmartContractNFT {
     // mint(contractAddress, securityJSON)
     function mint(
         address contractAddress,
-        AuditSecurityData calldata newSecurityData
+        AuditSecurityData calldata newAuditSecurityData
     ) external onlyAuditor {
-        s_contractAudits[contractAddress].push(newSecurityData);
+        s_contractAudits[contractAddress].push(newAuditSecurityData);
 
         _computeSecurityData(contractAddress);
 
         // update tokenIds
         // call ERC721 mint
 
-        emit MintSmartContractNFT(msg.sender, contractAddress, newSecurityData);
+        emit MintSmartContractNFT(msg.sender, contractAddress, newAuditSecurityData);
     }
 
     // getContractSecurity(contractAddress) returns (uint8 score)
