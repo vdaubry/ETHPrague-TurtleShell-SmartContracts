@@ -14,9 +14,9 @@ if (!constants.developmentChains.includes(network.name)) {
       provider = ethers.provider
 
       auditorNFT = await ethers.getContract("AuditorNFT", deployer)
-      smartContractNFT = await ethers.getContract("SmartContractNFT", deployer)
       auditor1 = (await getNamedAccounts()).user1
       auditor2 = (await getNamedAccounts()).user2
+      smartContractNFT = await ethers.getContract("SmartContractNFT", auditor1)
       fakeContractAddress = "0x000000000000000000000000000000000000dEaD"
       flashLoanType = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("flashloan"))
     })

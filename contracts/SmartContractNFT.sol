@@ -29,9 +29,10 @@ contract SmartContractNFT {
   // EVENTS
   event MintSmartContractNFT(address auditor, address contractAddress, AuditSecurityData securityData);
 
-  modifier onlyAuditor() {
+  modifier onlyAuditor(address auditor) {
     // check if has auditor NFT, revert otherwise
-
+    AuditorNFT.AuditorData memory auditorData = s_auditorNFT.getAuditorData(auditor);
+    require(auditorData.reputationScore > 0, "AuditorNFT: caller has no AuditorNFT minted");
     _;
   }
 
@@ -74,7 +75,7 @@ contract SmartContractNFT {
   function mint(
     address contractAddress,
     AuditSecurityData calldata newAuditSecurityData
-  ) external onlyAuditor {
+  ) external onlyAuditor(msg.sender) {
     s_contractAudits[contractAddress].push(newAuditSecurityData);
 
     _computeSecurityData(contractAddress);
