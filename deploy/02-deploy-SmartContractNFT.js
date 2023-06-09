@@ -10,9 +10,10 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const isDevelopmentChain = constants.developmentChains.includes(network.name)
   const waitBlockConfirmations = isDevelopmentChain ? 1 : network.config.blockConfirmations
   const contractName = "SmartContractNFT"
+  const auditorNFT = await ethers.getContract("AuditorNFT", deployer)
 
   log(`Deploying ${contractName}`)
-  const constructorArguments = []
+  const constructorArguments = [auditorNFT.address]
   const deployedContract = await deploy(contractName, {
     from: deployer,
     args: constructorArguments,

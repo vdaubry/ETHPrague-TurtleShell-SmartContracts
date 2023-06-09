@@ -6,6 +6,8 @@ import "./AuditorNFT.sol";
 // TODO: Create second version which stores security data on IPFS
 contract SmartContractNFT {
   // STORAGE
+  AuditorNFT private s_auditorNFT;
+
   // struct for the Audit Security JSON
   struct AuditSecurityData {
     address auditor;
@@ -33,6 +35,11 @@ contract SmartContractNFT {
     _;
   }
 
+  // CONSTRUCTOR
+  constructor(address auditorNFTAddress) {
+    s_auditorNFT = AuditorNFT(auditorNFTAddress);
+  }
+
   // FUNCTIONS
 
   // computeSecurityData internal
@@ -43,8 +50,8 @@ contract SmartContractNFT {
     bytes32 bestContractType = audits[0].contractType;
 
     for (uint256 i = 0; i < audits.length; i++) {
-      // TODO: remove mock and get the reputation score when AuditorSBT is implemented
-      uint8 auditorReputationScore = 50;
+      AuditorNFT.AuditorData memory auditorData = s_auditorNFT.getAuditorData(audits[i].auditor);
+      uint8 auditorReputationScore = auditorData.reputationScore;
 
       // get data from auditor with best reputation
       if (auditorReputationScore > currentMaximumReputation) {
