@@ -22,7 +22,6 @@ contract SmartContractNFT {
   // address of the Auditor NFT contract (to update array)
 
   mapping(address contractAddress => AuditSecurityData[]) private s_contractAudits;
-
   mapping(address contractAddress => ContractSecurityData) private s_contractSecurity;
 
   // EVENTS

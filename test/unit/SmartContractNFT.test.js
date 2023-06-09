@@ -38,6 +38,17 @@ if (!constants.developmentChains.includes(network.name)) {
           expect(contractSecurityData.score).to.equal(50)
           expect(contractSecurityData.contractType).to.equal(flashLoanType)
         })
+
+        it("should emit a MintSmartContractNFT event", async () => {
+          const newAuditSecurityData = {
+            auditor: auditor1,
+            contractType: flashLoanType,
+          }
+
+          await expect(smartContractNFT.mint(fakeContractAddress, newAuditSecurityData))
+            .to.emit(smartContractNFT, "MintSmartContractNFT")
+            .withArgs(auditor1, fakeContractAddress, newAuditSecurityData)
+        })
       })
 
       context("with multiple valid smart contract Audits", () => {
