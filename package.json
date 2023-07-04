@@ -28,5 +28,8 @@
     "lint": "yarn solhint 'contracts/*.sol'",
     "lint:fix": "yarn solhint 'contracts/*.sol' --fix",
     "format": "yarn prettier --write ."
+  },
+  "dependencies": {
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.8"
   }
 }
